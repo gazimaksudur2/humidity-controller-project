@@ -28,6 +28,125 @@ Bangladesh is facing severe mid-winter cold, impacting daily life with dense nig
 ## Necessary Software
 - Arduino IDE
 
+
+## Circuit Design
+
+### Connections
+- **LiquidCrystal_I2C Display:**
+  - VCC to 5V on Arduino
+  - GND to GND on Arduino
+  - SDA to A4 on Arduino
+  - SCL to A5 on Arduino
+- **DHT22 Sensor:**
+  - VCC to 5V on Arduino
+  - GND to GND on Arduino
+  - DATA to Digital Pin 2 on Arduino
+- **Potentiometer:**
+  - VCC to 5V on Arduino
+  - GND to GND on Arduino
+  - Wiper (middle pin) to A0 on Arduino
+- **Red LED:**
+  - Anode (long leg) to Digital Pin 10 on Arduino (through a 10kΩ resistor)
+  - Cathode (short leg) to GND on Arduino
+- **Relay:**
+  - VCC to 5V on Arduino
+  - GND to GND on Arduino
+  - IN to Digital Pin 10 on Arduino
+- **Humidifier Connect with Relay:**
+  - 5V of Humidifier connect with Relay ON
+  - GND to GND on Arduino
+  - COM of Relay connect with Humidifier VCC
+
+## Code Explanation
+
+### 1. Libraries and Definitions
+```cpp
+   #include <Wire.h>
+   #include <LiquidCrystal_I2C.h>
+   #include "DHT.h"
+   #define red_led 10
+```
+- Wire.h and LiquidCrystal_I2C.h are included for I2C communication with the LCD.
+- DHT.h is included to interface with the DHT22 sensor.
+- The red LED is defined to be connected to digital pin 10.
+
+### 2. LCD and Sensor Initialization
+```cpp
+int lcdColumns = 16;
+int lcdRows = 2;
+const int potpin = A0;
+int potValue = 0;
+LiquidCrystal_I2C lcd(0x27, lcdColumns, lcdRows);
+#define DHTPIN 2
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+```
+- LCD is set to have 16 columns and 2 rows.
+- Potentiometer is connected to analog pin A0.
+- LCD address is set to 0x27.
+- DHT22 sensor is connected to digital pin 2.
+
+### 3. Setup Function
+```cpp
+void setup() {
+  Serial.begin(115200);
+  lcd.init();
+  lcd.backlight();
+  dht.begin();
+  pinMode(red_led, OUTPUT);
+  digitalWrite(red_led, HIGH);
+}
+```
+- Serial communication is initialized at 115200 baud rate.
+- LCD and DHT22 sensor are initialized.
+- Red LED is set as output and initially turned off (HIGH).
+
+### 4. Loop Function
+```cpp
+void loop() {
+  delay(2000);
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  h = roundf(h * 10.0) / 10.0;
+  t = roundf(t * 10.0) / 10.0;
+  char humidityStr[6];
+  char temperatureStr[6];
+  dtostrf(h, 4, 1, humidityStr);
+  dtostrf(t, 4, 1, temperatureStr);
+  bool status = false;
+  potValue = analogRead(potpin);
+  potValue = map(potValue, 0, 1023, 0, 100);
+  if (isnan(h) || isnan(t)) {
+    Serial.println(F("Failed to read from DHT sensor!"));
+    return;
+  }
+  if(h < potValue) {
+    digitalWrite(red_led, LOW);
+    status = true;
+  } else {
+    digitalWrite(red_led, HIGH);
+    status = false;
+  }
+  lcd.setCursor(0, 0);
+  lcd.print(F("T:"));
+  lcd.print(temperatureStr);
+  lcd.print(F("C H:"));
+  lcd.print(humidityStr);
+  lcd.print(F("%"));
+  lcd.setCursor(0, 1);
+  lcd.print("Tg: ");
+  lcd.print(potValue);
+  lcd.print(" St: ");
+  lcd.print(status);
+}
+```
+- The system waits for 2 seconds between measurements.
+- Temperature and humidity are read from the DHT22 sensor and rounded to one decimal place.
+- Values are converted to strings for display.
+- The potentiometer value is read and mapped to a range of 0-100.
+- If the humidity is less than the potentiometer value, the LED is turned on (LOW), otherwise, it remains off (HIGH).
+- Temperature, humidity, threshold value, and status are displayed on the LCD.
+
 ## Results
 The constructed humidity controller effectively maintained the desired humidity level within the test environment. The DHT22 sensor provided accurate humidity readings, and the Arduino-controlled relay successfully activated and deactivated the humidifier based on the measured humidity.
 
