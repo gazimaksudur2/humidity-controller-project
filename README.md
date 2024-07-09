@@ -30,8 +30,10 @@ Bangladesh is facing severe mid-winter cold, impacting daily life with dense nig
 
 
 ## Circuit Design
+![Circuit Design Image](https://i.ibb.co/2ZhpLv5/circuit-design.jpg)
 
-### Connections
+
+## Connections
 - **LiquidCrystal_I2C Display:**
   - VCC to 5V on Arduino
   - GND to GND on Arduino
