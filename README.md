@@ -24,5 +24,5 @@ The Humidity Controller project addresses the need for a sophisticated system to
 ## Setup and Installation
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/username/humidity-controller.git
-   cd humidity-controller
+   https://github.com/gazimaksudur2/humidity-controller-project.git
+   cd humidity-controller-project
